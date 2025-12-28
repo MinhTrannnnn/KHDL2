@@ -1,107 +1,187 @@
-# 🎬 Hệ Gợi ý Phim Hybrid - Streamlit App
+# 🎬 Netflix-Style Movie Recommendation System
 
-Hệ thống gợi ý phim sử dụng phương pháp Hybrid kết hợp Collaborative Filtering và Content-Based Filtering.
+A hybrid movie recommendation system with a beautiful Netflix-style Streamlit web interface.
 
-## 📋 Yêu cầu
+## Features
 
-- Python 3.8+
-- Các thư viện trong `requirements.txt`
+- **Hybrid Recommendation Algorithm**: Combines Collaborative Filtering (SVD) and Content-Based Filtering (TF-IDF)
+- **Dual User Support**:
+  - **Existing Users**: Get personalized recommendations based on viewing history
+  - **Temporary Users**: Anonymous browsing with session-based recommendations
+- **Session Tracking**: Real-time tracking of viewed movies to improve recommendations
+- **Smart Re-ranking**: Recommendations adapt based on recently viewed content
+- **Netflix-Style UI**: Modern, dark-themed interface with movie posters
 
-## 🚀 Cài đặt
+## Installation
 
-1. **Cài đặt các thư viện cần thiết:**
-```bash
-pip install -r requirements.txt
+1. **Clone or navigate to the project directory**:
+   ```bash
+   cd Film
+   ```
+
+2. **Install required packages**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Ensure model files exist** in the `models/` folder:
+   - `svd_model.pkl`
+   - `tfidf_vectorizer.pkl`
+   - `user_factors.npy`
+   - `item_factors.npy`
+   - `movie_id_to_idx.pkl`
+   - `user_id_to_idx.pkl`
+   - `tfidf_movie_id_to_row.pkl`
+   - `movies_df_clean.pkl`
+   - `train_df.pkl`
+   - `tfidf_df.pkl`
+
+## Usage
+
+1. **Start the Streamlit app**:
+   ```bash
+   streamlit run streamlit_app.py
+   ```
+
+2. **Access the app**: Your browser should automatically open to `http://localhost:8501`
+
+## How to Use
+
+### For Existing Users
+
+1. Enter your **User ID** in the sidebar (e.g., `1`, `25`, `100`)
+2. Adjust the number of recommendations using the slider (5-20)
+3. Click **"Get Recommendations"**
+4. Browse personalized movie recommendations
+5. Click **"View"** on any movie to see more details
+
+### For Temporary Users (Anonymous)
+
+1. Leave the **User ID field empty**
+2. Adjust the number of recommendations using the slider
+3. Click **"Get Recommendations"** to get popular movies
+4. Click **"View"** on movies you're interested in
+5. Your viewing history is tracked in the session
+6. Get recommendations again to see personalized suggestions based on what you viewed!
+
+### Session-Based Recommendations
+
+When browsing as a temporary user:
+- Each movie you view is tracked in the current session
+- The system uses content-based filtering to find similar movies
+- Recommendations are re-ranked based on your viewing history
+- Clear your session history anytime using the **"Clear Session History"** button
+
+## System Architecture
+
+### Hybrid Recommendation
+
+The system combines two approaches:
+
+1. **Collaborative Filtering (CF)** - 30% weight
+   - Uses SVD (Singular Value Decomposition) for matrix factorization
+   - Finds patterns in user-item interactions
+   - Best for existing users with rating history
+
+2. **Content-Based Filtering (CB)** - 70% weight
+   - Uses TF-IDF vectorization on movie genres
+   - Finds movies similar to those the user liked
+   - Works for both existing and new/temporary users
+
+### Prediction Formula
+
+```
+Hybrid_Score = 0.3 × CF_Prediction + 0.7 × CB_Prediction
 ```
 
-2. **Train và lưu models:**
-```bash
-python train_models.py
+For temporary users with session history:
+```
+CB_Prediction = Weighted_Average(Similarity_to_Viewed_Movies)
 ```
 
-Script này sẽ:
-- Load và làm sạch dữ liệu từ `data/movies.csv` và `data/ratings.csv`
-- Train Collaborative Filtering model (SVD)
-- Tính Content Similarity Matrix
-- Lưu tất cả models vào thư mục `models/`
+### Re-ranking
 
-3. **Chạy Streamlit app:**
-```bash
-streamlit run app.py
+When session history exists:
+```
+Final_Score = 0.7 × Predicted_Rating + 0.3 × Session_Similarity
 ```
 
-App sẽ tự động mở trong trình duyệt tại `http://localhost:8501`
+## Technical Details
 
-## 📁 Cấu trúc Project
+- **Frontend**: Streamlit with custom CSS (Netflix theme)
+- **Backend**: Python with NumPy, Pandas, Scikit-learn
+- **Models**: Pre-trained SVD and TF-IDF models
+- **Data**: MovieLens dataset with 10,000+ movies
+- **Performance**: Models are cached for fast recommendations
+
+## Dataset
+
+- **Movies**: 10,329 movies with genres and metadata
+- **Ratings**: 105,339 ratings from 668 users
+- **Rating Scale**: 0.5 to 5.0 (half-star increments)
+
+## Files Structure
 
 ```
 Film/
-├── data/
-│   ├── movies.csv          # Dữ liệu phim
-│   └── ratings.csv         # Dữ liệu đánh giá
-├── notebook/
-│   └── test.ipynb          # Notebook phân tích và train
-├── models/                 # Thư mục chứa models (tạo sau khi chạy train_models.py)
-├── train_models.py         # Script train và lưu models
-├── app.py                  # Streamlit app
-├── requirements.txt        # Dependencies
-└── README.md              # File này
+├── streamlit_app.py         # Main Streamlit application
+├── requirements.txt         # Python dependencies
+├── README.md               # This file
+├── data/                   # Dataset files
+│   ├── movies.csv
+│   ├── ratings.csv
+│   └── movie_poster.csv
+├── models/                 # Pre-trained models (required)
+│   ├── svd_model.pkl
+│   ├── tfidf_vectorizer.pkl
+│   ├── user_factors.npy
+│   ├── item_factors.npy
+│   ├── movie_id_to_idx.pkl
+│   ├── user_id_to_idx.pkl
+│   ├── tfidf_movie_id_to_row.pkl
+│   ├── movies_df_clean.pkl
+│   ├── train_df.pkl
+│   └── tfidf_df.pkl
+└── notebook/               # Development notebooks
+    ├── test.ipynb
+    ├── valuation.ipynb
+    └── visualization.ipynb
 ```
 
-## 🎯 Tính năng
+## Troubleshooting
 
-### 1. Gợi ý Phim
-- Chọn User ID
-- Xem top N phim được gợi ý
-- Hiển thị predicted rating từ cả 2 phương pháp (CF và CB)
+### Models not found
+- Ensure all `.pkl` and `.npy` files are in the `models/` folder
+- Check that the models were generated from the notebooks
 
-### 2. Tìm kiếm Phim
-- Tìm kiếm phim theo tên
-- Xem thông tin chi tiết phim
-- Dự đoán rating cho phim cụ thể
+### Streamlit not starting
+- Make sure you're in the correct directory
+- Check that all dependencies are installed: `pip list`
+- Try: `python -m streamlit run streamlit_app.py`
 
-### 3. Thống kê
-- Thống kê tổng quan về dataset
-- Xem lịch sử đánh giá của user
+### Recommendations not working
+- Verify User ID exists in dataset (User IDs: 1-668)
+- For temporary users, leave User ID empty
+- Click "Get Recommendations" button after changing settings
 
-## ⚙️ Cài đặt
+## Performance Tips
 
-Trong sidebar, bạn có thể:
-- Chọn User ID
-- Điều chỉnh số lượng phim gợi ý (5-50)
-- Điều chỉnh trọng số giữa Collaborative Filtering và Content-Based Filtering
+- Models are cached after first load (faster subsequent recommendations)
+- Session state persists during the session
+- Clear session history to reset temporary user tracking
 
-## 📊 Model
+## Credits
 
-### Collaborative Filtering
-- Sử dụng SVD (Singular Value Decomposition)
-- 50 components
-- Dựa trên lịch sử đánh giá của users
+- **Algorithm**: Hybrid Recommendation System (CF + CB)
+- **Data**: MovieLens Dataset
+- **UI Framework**: Streamlit
+- **Style**: Inspired by Netflix
 
-### Content-Based Filtering
-- Sử dụng TF-IDF vectorization cho genres
-- Cosine similarity giữa các phim
-- Dựa trên đặc điểm của phim (thể loại)
+## License
 
-### Hybrid
-- Kết hợp 2 phương pháp với weighted average
-- Mặc định: 60% CF + 40% CB
+This project is for educational purposes.
 
-## 🔧 Troubleshooting
+---
 
-**Lỗi: Không tìm thấy file model**
-- Đảm bảo đã chạy `python train_models.py` trước khi chạy app
-
-**Lỗi: Module not found**
-- Chạy `pip install -r requirements.txt` để cài đặt dependencies
-
-## 📝 Lưu ý
-
-- Quá trình train model có thể mất vài phút
-- Content Similarity Matrix được tính cho tất cả các phim trong train set
-- Models được cache để tăng tốc độ load
-
-## 👤 Tác giả
-
-Hệ thống gợi ý hybrid cho MovieLens Dataset
+**Enjoy discovering new movies! 🍿🎬**
 
